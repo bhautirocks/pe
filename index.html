@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Engineering Joke Generator</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #0e0e0e;
+      color: #f1f1f1;
+      padding: 30px 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 700px;
+      width: 100%;
+      background: #1c1c1c;
+      padding: 30px;
+      border-radius: 16px;
+      box-shadow: 0 0 25px rgba(0, 255, 136, 0.2);
+      border: 1px solid #333;
+      animation: fadeIn 0.6s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    h1 {
+      color: #00ff88;
+      text-align: center;
+      margin-bottom: 25px;
+      font-size: 2rem;
+    }
+
+    label {
+      margin-top: 15px;
+      font-weight: bold;
+      color: #aaa;
+    }
+
+    select, input, textarea {
+      width: 100%;
+      padding: 10px 12px;
+      margin-top: 6px;
+      border: none;
+      border-radius: 8px;
+      background: #2c2c2c;
+      color: #f1f1f1;
+      outline: none;
+      font-size: 1rem;
+      transition: background 0.3s;
+    }
+
+    select:focus, input:focus, textarea:focus {
+      background: #3c3c3c;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 70px;
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    button {
+      flex: 1;
+      padding: 12px;
+      font-size: 1rem;
+      font-weight: bold;
+      background: #00ff88;
+      color: #000;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.3s, transform 0.2s;
+    }
+
+    button:hover {
+      background: #00cc6a;
+      transform: scale(1.03);
+    }
+
+    .output-box {
+      margin-top: 25px;
+      padding: 20px;
+      background: #111;
+      border-left: 5px solid #00ff88;
+      border-radius: 10px;
+      font-size: 1.1rem;
+      line-height: 1.6;
+      white-space: pre-wrap;
+    }
+
+    @media (max-width: 500px) {
+      h1 {
+        font-size: 1.5rem;
+      }
+      .btn-group {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🤖 Engineering Joke Generator</h1>
+
+    <label for="type">Select Joke Type:</label>
+    <select id="type">
+      <option value="clean">Clean</option>
+      <option value="18+">18+ (NSFW)</option>
+    </select>
+
+    <label for="length">Select Joke Length:</label>
+    <select id="length">
+      <option value="short">Short</option>
+      <option value="medium">Medium</option>
+      <option value="long">Long</option>
+    </select>
+
+    <label for="topic">Joke Topic (optional):</label>
+    <input type="text" id="topic" placeholder="E.g., mechanical engineers, circuits, software bugs" />
+
+    <label for="desc">Additional Description (optional):</label>
+    <textarea id="desc" placeholder="E.g., make it sarcastic, include wordplay, etc."></textarea>
+
+    <div class="btn-group">
+      <button onclick="generateJoke()">Generate Joke</button>
+      <button onclick="generateJoke()">Regenerate</button>
+    </div>
+
+    <div class="output-box" id="jokeBox">Your joke will appear here...</div>
+  </div>
+
+  <script>
+    const API_URL = 'https://openrouter.ai/api/v1/chat/completions';
+    const API_KEY = ''; // Replace this with your actual OpenRouter API key
+
+    async function generateJoke() {
+      const type = document.getElementById('type').value;
+      const length = document.getElementById('length').value;
+      const topic = document.getElementById('topic').value.trim();
+      const desc = document.getElementById('desc').value.trim();
+      const jokeBox = document.getElementById('jokeBox');
+
+      jokeBox.textContent = "Generating your hilarious engineering joke... 😄";
+
+      const prompt = `Create a ${length} ${type === "18+" ? "18+" : "clean"} engineering joke${topic ? " about " + topic : ""}.${desc ? " " + desc : ""} Make it witty, original, and funny.`;
+
+      try {
+        const response = await fetch(API_URL, {
+          method: 'POST',
+          headers: {
+            'Authorization': 'Bearer ' + API_KEY,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            model: "mistralai/mixtral-8x7b-instruct",
+            messages: [
+              { role: "system", content: "You are a witty joke generator that focuses on engineering humor." },
+              { role: "user", content: prompt }
+            ]
+          })
+        });
+
+        const data = await response.json();
+        const joke = data.choices?.[0]?.message?.content || "Oops! Couldn't generate a joke. Try again.";
+        jokeBox.textContent = joke.trim();
+      } catch (error) {
+        console.error(error);
+        jokeBox.textContent = "Error generating joke. Please check your API key or internet connection.";
+      }
+    }
+  </script>
+</body>
+</html>
